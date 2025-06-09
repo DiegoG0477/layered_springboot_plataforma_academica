@@ -44,6 +44,8 @@ dependencies {
 
 	implementation("com.cloudinary:cloudinary-http45:1.39.0")
 
+	implementation("com.opencsv:opencsv:5.11.1")
+
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
