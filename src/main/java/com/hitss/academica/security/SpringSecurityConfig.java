@@ -16,10 +16,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Habilita seguridad a nivel de método
 public class SpringSecurityConfig {
 
     @Autowired
@@ -50,10 +52,8 @@ public class SpringSecurityConfig {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        String hierarchy = "ROLE_ADMIN > ROLE_PROFESOR \n ROLE_PROFESOR > ROLE_ESTUDIANTE";
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-        roleHierarchy.setHierarchy(hierarchy);
-        return roleHierarchy;
+        // Uso del método estático recomendado para evitar la advertencia de deprecación
+        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_PROFESOR \n ROLE_PROFESOR > ROLE_ESTUDIANTE");
     }
 
     @Bean
@@ -66,52 +66,62 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // <-- AÑADIDO: Habilitar CORS
-            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable) // Forma moderna de deshabilitar CSRF
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                // --- Endpoints Públicos ---
+                // Se permite el acceso público a login, register y swagger.
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                 .requestMatchers(
                     "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
-                    "/swagger-resources", "/swagger-resources/**", "/configuration/ui",
-                    "/configuration/security", "/webjars/**"
+                    "/swagger-resources/**", "/configuration/ui", "/configuration/security", "/webjars/**"
                 ).permitAll()
+
+                // --- Reglas de Roles Específicos ---
+                // Aquí defines los permisos mínimos requeridos. La jerarquía se encargará de los roles superiores.
                 .requestMatchers(HttpMethod.GET, "/api/notas/estudiante/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/materiales/asignatura/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/historial-estudiante/{id}").hasRole("ESTUDIANTE")
+
                 .requestMatchers(HttpMethod.GET, "/api/profesores/{id}/asignaturas").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/notas/asignatura/{id}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/notas-promedio").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.POST, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.PUT, "/api/notas/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
+
+                // La gestión completa solo para ADMIN
                 .requestMatchers("/api/usuarios/**", "/api/roles/**", "/api/profesores/**",
                                  "/api/estudiantes/**", "/api/cursos/**", "/api/periodos/**",
                                  "/api/asignaturas/**", "/api/reportes/**").hasRole("ADMIN")
+
+                // --- Endpoints Autenticados ---
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+
+                // --- Denegar todo lo demás ---
                 .anyRequest().denyAll()
             )
+            // Se registra el filtro de autenticación JWT. Spring lo colocará en la posición correcta.
             .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenJwtConfig))
-            .addFilterBefore(new JwtValidationFilter(authenticationManager(), tokenJwtConfig), JwtAuthenticationFilter.class);
+            // El filtro de validación se ejecuta antes del de autenticación estándar.
+            .addFilterBefore(new JwtValidationFilter(authenticationManager(), tokenJwtConfig), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // --- Configuración de CORS ---
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://127.0.0.1:5173"));
-
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 

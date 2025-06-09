@@ -30,6 +30,7 @@ public class AuthController {
     @Autowired
     private UsuarioMapper usuarioMapper;
 
+        // --- Endpoint virtual para documentar /login ---
     @Operation(
         summary = "Iniciar sesión de usuario",
         description = "Autentica a un usuario con su email y contraseña, y devuelve un token JWT si es exitoso.",
@@ -45,7 +46,7 @@ public class AuthController {
     )
     @PostMapping("/login")
     public void fakeLoginEndpoint() {
-        // solo existe para que swagger pueda documentarlo.
+        //solo existe para swagger
         throw new IllegalStateException("Este método no debería ser llamado. Es manejado por Spring Security.");
     }
 

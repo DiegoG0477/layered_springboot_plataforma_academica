@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -28,8 +29,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final TokenJwtConfig tokenJwtConfig;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenJwtConfig tokenJwtConfig) {
-        super(authenticationManager); // Pasamos el AuthenticationManager a la clase padre
+        // Pasamos el AuthenticationManager al constructor de la clase padre
+        super(authenticationManager);
         this.tokenJwtConfig = tokenJwtConfig;
+        // Definimos explícitamente que este filtro SOLO debe actuar sobre POST /api/auth/login
+        this.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/auth/login", "POST"));
     }
 
     @Override
@@ -46,6 +50,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String password = loginRequest.getPassword();
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
+        // Usamos getAuthenticationManager() que fue establecido en el constructor de la clase padre
         return getAuthenticationManager().authenticate(authToken);
     }
 
