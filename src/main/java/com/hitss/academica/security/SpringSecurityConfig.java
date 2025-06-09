@@ -3,8 +3,10 @@ package com.hitss.academica.security;
 import com.hitss.academica.security.filter.JwtAuthenticationFilter;
 import com.hitss.academica.security.filter.JwtValidationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -18,7 +20,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -43,7 +51,9 @@ public class SpringSecurityConfig {
     @Bean
     public RoleHierarchy roleHierarchy() {
         String hierarchy = "ROLE_ADMIN > ROLE_PROFESOR \n ROLE_PROFESOR > ROLE_ESTUDIANTE";
-        return RoleHierarchyImpl.fromHierarchy(hierarchy);
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
     }
 
     @Bean
@@ -55,57 +65,61 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager(), tokenJwtConfig);
-        jwtAuthenticationFilter.setFilterProcessesUrl("/api/auth/login");
-
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // <-- AÑADIDO: Habilitar CORS
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // 1. Endpoints Públicos
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
                 .requestMatchers(
-                    "/swagger-ui.html",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/swagger-resources",
-                    "/swagger-resources/**",
-                    "/configuration/ui",
-                    "/configuration/security",
-                    "/webjars/**"
+                    "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+                    "/swagger-resources", "/swagger-resources/**", "/configuration/ui",
+                    "/configuration/security", "/webjars/**"
                 ).permitAll()
-
-                // 2. Endpoints de ESTUDIANTE
                 .requestMatchers(HttpMethod.GET, "/api/notas/estudiante/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/materiales/asignatura/{id}").hasRole("ESTUDIANTE")
-
-                // 3. Endpoints de PROFESOR (ADMIN hereda estos permisos)
+                .requestMatchers(HttpMethod.GET, "/api/reportes/historial-estudiante/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/profesores/{id}/asignaturas").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/notas/asignatura/{id}").hasRole("PROFESOR")
+                .requestMatchers(HttpMethod.GET, "/api/reportes/notas-promedio").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.POST, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.PUT, "/api/notas/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
-
-                // 4. Endpoints de ADMIN
-                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                .requestMatchers("/api/reportes/**").hasRole("ADMIN")
-                .requestMatchers("/api/roles/**").hasRole("ADMIN")
-                .requestMatchers("/api/profesores/**").hasRole("ADMIN")
-                .requestMatchers("/api/estudiantes/**").hasRole("ADMIN")
-                .requestMatchers("/api/cursos/**").hasRole("ADMIN")
-                .requestMatchers("/api/periodos/**").hasRole("ADMIN")
-                .requestMatchers("/api/asignaturas/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/reportes/reporte-final/{cursoId}").hasRole("ADMIN")
-
-                // 5. Endpoints Autenticados
+                .requestMatchers("/api/usuarios/**", "/api/roles/**", "/api/profesores/**",
+                                 "/api/estudiantes/**", "/api/cursos/**", "/api/periodos/**",
+                                 "/api/asignaturas/**", "/api/reportes/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
-
-                // 6. Denegar todo lo demás
                 .anyRequest().denyAll()
             )
-            .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new JwtValidationFilter(authenticationManager(), tokenJwtConfig), UsernamePasswordAuthenticationFilter.class);
+            .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenJwtConfig))
+            .addFilterBefore(new JwtValidationFilter(authenticationManager(), tokenJwtConfig), JwtAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://127.0.0.1:5173"));
+
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(
+                new CorsFilter(corsConfigurationSource()));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
