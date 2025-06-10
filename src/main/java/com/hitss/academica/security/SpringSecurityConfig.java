@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true) // Habilita seguridad a nivel de método
+@EnableMethodSecurity(prePostEnabled = true)
 public class SpringSecurityConfig {
 
     @Autowired
@@ -78,13 +78,10 @@ public class SpringSecurityConfig {
                     "/swagger-resources/**", "/configuration/ui", "/configuration/security", "/webjars/**"
                 ).permitAll()
 
-                // --- Reglas de Roles Específicos ---
-                // Aquí defines los permisos mínimos requeridos. La jerarquía se encargará de los roles superiores.
                 .requestMatchers(HttpMethod.GET, "/api/materiales/asignatura/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/asignaturas/estudiante").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/notas/estudiante").hasRole("ESTUDIANTE")
 
-                    //pendientes: Filtro de acceso de profesor por asignatura, filtro de estudiante por asignatura
                 .requestMatchers(HttpMethod.GET, "/api/asignaturas/{id}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/notas/estudiante/{id}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/estudiantes/asignatura/{asignaturaId}").hasRole("PROFESOR")
@@ -94,7 +91,6 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/notas/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
 
-                // La gestión completa solo para ADMIN
                 .requestMatchers("/api/usuarios/**", "/api/roles/**", "/api/profesores/**",
                                  "/api/estudiantes/**", "/api/cursos/**", "/api/periodos/**",
                                  "/api/asignaturas/**", "/api/reportes/**").hasRole("ADMIN")

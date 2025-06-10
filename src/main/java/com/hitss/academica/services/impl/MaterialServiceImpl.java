@@ -40,14 +40,13 @@ public class MaterialServiceImpl implements MaterialService {
             "image/jpeg",
             "image/png",
             "application/pdf",
-            "application/msword", // .doc
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" // .docx
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );
 
     @Override
     @Transactional
     public MaterialResponseDTO create(MaterialRequestDTO requestDTO, MultipartFile archivo) throws IOException {
-        // --- INICIO DE VALIDACIÓN ---
         if (archivo.isEmpty()) {
             throw new IllegalArgumentException("El archivo no puede estar vacío.");
         }
@@ -56,21 +55,18 @@ public class MaterialServiceImpl implements MaterialService {
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, PDF, DOC, DOCX.");
         }
-        // --- FIN DE VALIDACIÓN ---
 
         Asignatura asignatura = asignaturaRepository.findById(requestDTO.getAsignaturaId())
                 .orElseThrow(() -> new NoSuchElementException("Asignatura no encontrada con ID: " + requestDTO.getAsignaturaId()));
 
-        // Para Cloudinary, es útil subir los archivos a una carpeta específica
         Map<String, String> options = ObjectUtils.asMap(
-            "folder", "academica/materiales", //carpeta de cloudinary
-            "resource_type", "auto" // cloudinary detecta en automatico tipo de archivo
+            "folder", "academica/materiales",
+            "resource_type", "auto"
         );
 
         Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), options);
         String url = (String) uploadResult.get("secure_url");
 
-        // 2. Crear y guardar la entidad Material con la URL obtenida
         Material nuevoMaterial = new Material();
         nuevoMaterial.setTitulo(requestDTO.getTitulo());
         nuevoMaterial.setDescripcion(requestDTO.getDescripcion());
@@ -87,14 +83,11 @@ public class MaterialServiceImpl implements MaterialService {
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Material no encontrado con ID: " + id));
 
-        // 1. Extraer el public_id de la URL para poder borrarlo de Cloudinary
         String url = material.getArchivoUrl();
         String publicId = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("."));
 
-        // 2. Borrar el archivo de Cloudinary
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
 
-        // 3. Borrar el registro de la base de datos (borrado lógico)
         materialRepository.deleteById(id);
     }
 

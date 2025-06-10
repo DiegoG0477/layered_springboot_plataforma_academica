@@ -41,14 +41,12 @@ public class AsignaturaServiceImpl implements AsignaturaService {
     @Override
     @Transactional
     public AsignaturaResponseDTO create(AsignaturaRequestDTO requestDTO) {
-        // 1. Validar que el profesor y el curso existan
         Profesor profesor = profesorRepository.findById(requestDTO.getProfesorId())
                 .orElseThrow(() -> new RuntimeException("Profesor no encontrado con ID: " + requestDTO.getProfesorId()));
 
         Curso curso = cursoRepository.findById(requestDTO.getCursoId())
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + requestDTO.getCursoId()));
 
-        // 2. Crear y guardar la nueva asignatura
         Asignatura nuevaAsignatura = new Asignatura();
         nuevaAsignatura.setNombre(requestDTO.getNombre());
         nuevaAsignatura.setProfesor(profesor);
@@ -78,23 +76,19 @@ public class AsignaturaServiceImpl implements AsignaturaService {
     @Override
     @Transactional
     public AsignaturaResponseDTO update(Long id, AsignaturaRequestDTO requestDTO) {
-        // 1. Buscar la asignatura existente
         Asignatura asignaturaAActualizar = asignaturaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Asignatura no encontrada con ID: " + id));
 
-        // 2. Validar que las nuevas referencias (profesor, curso) existan
         Profesor profesor = profesorRepository.findById(requestDTO.getProfesorId())
                 .orElseThrow(() -> new RuntimeException("Profesor no encontrado con ID: " + requestDTO.getProfesorId()));
 
         Curso curso = cursoRepository.findById(requestDTO.getCursoId())
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + requestDTO.getCursoId()));
 
-        // 3. Actualizar los campos
         asignaturaAActualizar.setNombre(requestDTO.getNombre());
         asignaturaAActualizar.setProfesor(profesor);
         asignaturaAActualizar.setCurso(curso);
 
-        // 4. Guardar y devolver
         Asignatura asignaturaActualizada = asignaturaRepository.save(asignaturaAActualizar);
         return asignaturaMapper.asignaturaToAsignaturaResponseDto(asignaturaActualizada);
     }
@@ -111,20 +105,14 @@ public class AsignaturaServiceImpl implements AsignaturaService {
     @Override
     @Transactional(readOnly = true)
     public List<AsignaturaResponseDTO> findAsignaturasByEstudianteAuth(String userEmail) {
-        // 1. Buscamos el perfil del estudiante a partir del email del usuario.
-        // Asumimos que el email es único en la tabla de usuarios.
         return estudianteRepository.findByUsuario_Email(userEmail)
                 .map(estudiante -> {
-                    // 2. Si se encuentra el estudiante, obtenemos el ID de su curso actual.
                     Long cursoId = estudiante.getCursoActual().getId();
-                    // 3. Buscamos todas las asignaturas de ese curso.
                     List<Asignatura> asignaturas = asignaturaRepository.findByCursoId(cursoId);
-                    // 4. Mapeamos a DTO y devolvemos la lista.
                     return asignaturas.stream()
                             .map(asignaturaMapper::asignaturaToAsignaturaResponseDto)
                             .collect(Collectors.toList());
                 })
-                // 5. Si no se encuentra un perfil de estudiante para ese email, devolvemos una lista vacía.
                 .orElse(Collections.emptyList());
     }
 }

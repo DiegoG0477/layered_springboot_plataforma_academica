@@ -34,8 +34,7 @@ public class ReporteServiceImpl implements ReporteService {
     @Override
     @Transactional(readOnly = true)
     public List<PromedioAsignaturaDTO> getPromedioNotasPorAsignatura() {
-        // La lógica ahora vive felizmente en la consulta del repositorio.
-        // El servicio solo la invoca.
+
         return notaRepository.findPromedioNotasPorAsignatura();
     }
 

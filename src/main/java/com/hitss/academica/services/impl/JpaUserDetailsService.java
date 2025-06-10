@@ -25,7 +25,6 @@ public class JpaUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Buscamos el usuario por email, que será nuestro "username"
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
         if (usuarioOptional.isEmpty()) {
@@ -34,12 +33,10 @@ public class JpaUserDetailsService implements UserDetailsService {
 
         Usuario usuario = usuarioOptional.get();
 
-        // Creamos la lista de roles (authorities)
         List<GrantedAuthority> authorities = Collections.singletonList(
                 new SimpleGrantedAuthority(usuario.getRol().getRol())
         );
 
-        // Devolvemos un objeto User de Spring Security
         return new User(
                 usuario.getEmail(),
                 usuario.getPassword(),

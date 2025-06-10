@@ -10,5 +10,4 @@ public interface CursoService {
     CursoResponseDTO create(CursoRequestDTO requestDTO);
     List<CursoResponseDTO> findAll();
     CursoDetailResponseDTO findById(Long id);
-    // Podríamos añadir update y delete si fuera necesario
 }

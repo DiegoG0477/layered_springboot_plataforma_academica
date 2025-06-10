@@ -101,7 +101,6 @@ public class NotaServiceImpl implements NotaService {
     @Override
     @Transactional(readOnly = true)
     public List<NotaResponseDTO> findNotasByEstudianteAuth(String userEmail) {
-        // La lógica está encapsulada en el repositorio.
         List<Nota> notas = notaRepository.findByEstudiante_Usuario_Email(userEmail);
         return notaMapper.notasToNotaResponseDtos(notas);
     }

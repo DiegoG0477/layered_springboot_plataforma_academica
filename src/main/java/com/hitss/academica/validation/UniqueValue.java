@@ -16,13 +16,7 @@ public @interface UniqueValue {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 
-    /**
-     * Nombre del campo en la base de datos para realizar la consulta.
-     */
     String fieldName();
 
-    /**
-     * La clase del repositorio que se usará para la consulta.
-     */
     Class<?> repository();
 }

@@ -41,7 +41,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario nuevoUsuario = usuarioMapper.registerRequestDtoToUsuario(registerRequestDTO);
         nuevoUsuario.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
 
-        // CAMBIO IMPORTANTE: Buscamos el rol proporcionado en el DTO
         Rol rolAsignado = rolRepository.findById(registerRequestDTO.getRolId())
                 .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado con ID: " + registerRequestDTO.getRolId()));
 
@@ -71,7 +70,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuarioAActualizar = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
 
-        // ... (lógica de actualización que ya teníamos) ...
         if (updateRequestDTO.getNombre() != null) {
             usuarioAActualizar.setNombre(updateRequestDTO.getNombre());
         }

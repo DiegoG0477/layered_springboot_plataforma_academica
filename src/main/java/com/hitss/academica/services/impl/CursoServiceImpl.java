@@ -31,16 +31,13 @@ public class CursoServiceImpl implements CursoService {
     @Override
     @Transactional
     public CursoResponseDTO create(CursoRequestDTO requestDTO) {
-        // 1. Validar que el periodo lectivo exista
         PeriodoLectivo periodo = periodoLectivoRepository.findById(requestDTO.getPeriodoAcademicoId())
                 .orElseThrow(() -> new RuntimeException("Periodo Lectivo no encontrado con ID: " + requestDTO.getPeriodoAcademicoId()));
 
-        // 2. Crear la entidad curso (sin mapeador para este caso, es simple)
         Curso nuevoCurso = new Curso();
         nuevoCurso.setNombre(requestDTO.getNombre());
         nuevoCurso.setPeriodoLectivo(periodo);
 
-        // 3. Guardar y mapear a DTO de respuesta
         Curso cursoGuardado = cursoRepository.save(nuevoCurso);
         return cursoMapper.cursoToCursoResponseDto(cursoGuardado);
     }
@@ -58,7 +55,6 @@ public class CursoServiceImpl implements CursoService {
     public CursoDetailResponseDTO findById(Long id) {
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + id));
-        // Usamos el mapper para el DTO de detalle, que hace el "JOIN"
         return cursoMapper.cursoToCursoDetailDto(curso);
     }
 }

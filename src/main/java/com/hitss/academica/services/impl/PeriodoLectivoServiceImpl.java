@@ -25,7 +25,6 @@ public class PeriodoLectivoServiceImpl implements PeriodoLectivoService {
     @Override
     @Transactional
     public PeriodoResponseDTO create(PeriodoRequestDTO requestDTO) {
-        // Validación de negocio (adicional a las de DTO)
         if (requestDTO.getFechaInicio().isAfter(requestDTO.getFechaFin())) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
         }

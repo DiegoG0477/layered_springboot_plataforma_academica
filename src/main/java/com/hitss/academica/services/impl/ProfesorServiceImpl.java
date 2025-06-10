@@ -40,18 +40,13 @@ public class ProfesorServiceImpl implements ProfesorService {
     @Override
     @Transactional
     public ProfesorResponseDTO create(ProfesorRequestDTO requestDTO) {
-        // 1. Validar que el usuario exista y que tenga el rol de PROFESOR
         Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + requestDTO.getUsuarioId()));
 
         if (!"ROLE_PROFESOR".equals(usuario.getRol().getRol())) {
             throw new IllegalArgumentException("El usuario proporcionado no tiene el rol de PROFESOR.");
         }
-        
-        // Opcional: Validar que este usuario no tenga ya un perfil de profesor
-        // if (profesorRepository.existsByUsuarioId(usuario.getId())) { ... }
 
-        // 2. Crear y guardar el nuevo perfil de profesor
         Profesor nuevoProfesor = new Profesor();
         nuevoProfesor.setUsuario(usuario);
         nuevoProfesor.setEspecialidad(requestDTO.getEspecialidad());
@@ -75,12 +70,10 @@ public class ProfesorServiceImpl implements ProfesorService {
         Profesor profesor = profesorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Profesor no encontrado con ID: " + id));
 
-        // Para el DTO de detalle, necesitamos obtener las asignaturas por separado
         List<String> nombresAsignaturas = asignaturaRepository.findByProfesorId(id).stream()
                 .map(asignatura -> asignatura.getNombre())
                 .collect(Collectors.toList());
-        
-        // Mapeamos los datos básicos con MapStruct
+
         ProfesorDetailResponseDTO dto = new ProfesorDetailResponseDTO();
         dto.setId(profesor.getId());
         dto.setNombreCompleto(profesor.getUsuario().getNombre() + " " + profesor.getUsuario().getApellidoPaterno());
