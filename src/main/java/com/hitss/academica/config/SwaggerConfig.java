@@ -46,7 +46,7 @@ public class SwaggerConfig {
         if ("prod".equals(activeProfile)) {
             // Si estamos en producción, añadimos el servidor de producción
             openAPI.servers(List.of(
-                new Server().url("https://dev-acad.parachico.xyz").description("Servidor de Pruebas")
+                new Server().url("https://dev-acad.api.parachico.xyz").description("Servidor de Pruebas")
             ));
         } else {
             // Para cualquier otro perfil (dev), añadimos el servidor local
