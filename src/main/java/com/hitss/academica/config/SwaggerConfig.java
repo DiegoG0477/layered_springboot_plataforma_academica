@@ -5,19 +5,30 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.servers.Server; // <-- Importar Server
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
 
-    // Bean para configuración general, sin perfil
+    // Inyectamos el valor del perfil activo. Si no se define, por defecto será "dev".
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
+    // Inyectamos la URL del frontend para la configuración de CORS en dev.
+    @Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Bean
-    public OpenAPI baseOpenAPI() {
+    public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
-        return new OpenAPI()
+
+        // Creamos la base de la configuración de OpenAPI
+        OpenAPI openAPI = new OpenAPI()
                 .info(new Info()
                         .title("API Académica")
                         .version("1.0.0")
@@ -30,32 +41,20 @@ public class SwaggerConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")));
-    }
 
-    // Bean ADICIONAL específico para producción
-    // Spring combinará este bean con el de arriba cuando el perfil 'prod' esté activo.
-    @Bean
-    @Profile("prod")
-    public OpenAPI prodOpenAPI(OpenAPI baseOpenAPI) {
-        // Añadimos la URL del servidor de producción
-        Server prodServer = new Server();
-        prodServer.setUrl("https://dev-acad.parachico.xyz"); // <-- TU DOMINIO REAL
-        prodServer.setDescription("Servidor de Producción");
+        // ---- LÓGICA CONDICIONAL BASADA EN EL PERFIL ----
+        if ("prod".equals(activeProfile)) {
+            // Si estamos en producción, añadimos el servidor de producción
+            openAPI.servers(List.of(
+                new Server().url("https://dev-acad.parachico.xyz").description("Servidor de Pruebas")
+            ));
+        } else {
+            // Para cualquier otro perfil (dev), añadimos el servidor local
+            openAPI.servers(List.of(
+                new Server().url("http://localhost:8080").description("Servidor de Desarrollo Local")
+            ));
+        }
 
-        baseOpenAPI.addServersItem(prodServer);
-        return baseOpenAPI;
-    }
-
-    // Bean ADICIONAL específico para desarrollo
-    @Bean
-    @Profile("dev")
-    public OpenAPI devOpenAPI(OpenAPI baseOpenAPI) {
-        // Añadimos la URL del servidor de desarrollo
-        Server devServer = new Server();
-        devServer.setUrl("http://localhost:8080");
-        devServer.setDescription("Servidor de Desarrollo Local");
-
-        baseOpenAPI.addServersItem(devServer);
-        return baseOpenAPI;
+        return openAPI;
     }
 }
