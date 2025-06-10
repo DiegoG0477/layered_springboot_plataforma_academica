@@ -6,6 +6,8 @@ import com.hitss.academica.entities.Estudiante;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface EstudianteMapper {
 
@@ -17,4 +19,6 @@ public interface EstudianteMapper {
     @Mapping(source = "usuario.email", target = "email")
     @Mapping(source = "cursoActual.nombre", target = "cursoActual")
     EstudianteDetailResponseDTO estudianteToEstudianteDetailDto(Estudiante estudiante);
+
+    List<EstudianteResponseDTO> estudiantesToEstudianteResponseDtos(List<Estudiante> estudiantes);
 }

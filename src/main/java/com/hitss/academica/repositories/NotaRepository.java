@@ -12,7 +12,6 @@ public interface NotaRepository extends JpaRepository<Nota, Long> {
     List<Nota> findByEstudianteId(Long estudianteId);
     List<Nota> findByAsignaturaId(Long asignaturaId);
 
-    // Esta consulta construye los DTOs directamente. Es la forma más robusta.
     @Query("SELECT new com.hitss.academica.dto.reporte.PromedioAsignaturaDTO(" +
            "   c.nombre, " +
            "   a.id, " +

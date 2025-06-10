@@ -85,6 +85,9 @@ public class SpringSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/materiales/asignatura/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/historial-estudiante/{id}").hasRole("ESTUDIANTE")
 
+                    //pendientes: Filtro de acceso de profesor por asignatura, filtro de estudiante por asignatura y estudiante ID
+                .requestMatchers(HttpMethod.GET, "/api/asignaturas/{id}").hasRole("PROFESOR")
+                .requestMatchers(HttpMethod.GET, "/api/estudiantes/asignatura/{asignaturaId}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/profesores/{id}/asignaturas").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/notas/asignatura/{id}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/notas-promedio").hasRole("PROFESOR")

@@ -9,6 +9,6 @@ public class MeResponseDTO {
     private String apellidoPaterno;
     private String email;
     private String rol;
-    // Podríamos añadir una lista de permisos específicos si los tuviéramos
-    // private List<String> permissions;
+    private Long profesorId;
+    private Long estudianteId;
 }

@@ -9,5 +9,6 @@ public class AsignaturaDetailResponseDTO {
     private String nombre;
     private String nombreProfesor; // JOIN
     private String nombreCurso;    // JOIN
+    private Long cursoId;
     private LocalDateTime createdAt;
 }

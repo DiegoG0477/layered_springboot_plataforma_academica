@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Service
 public class MaterialServiceImpl implements MaterialService {
@@ -34,15 +36,39 @@ public class MaterialServiceImpl implements MaterialService {
     @Autowired
     private MaterialMapper materialMapper;
 
+    private static final List<String> ALLOWED_CONTENT_TYPES = Arrays.asList(
+            "image/jpeg",
+            "image/png",
+            "application/pdf",
+            "application/msword", // .doc
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" // .docx
+    );
+
     @Override
     @Transactional
     public MaterialResponseDTO create(MaterialRequestDTO requestDTO, MultipartFile archivo) throws IOException {
-        Asignatura asignatura = asignaturaRepository.findById(requestDTO.getAsignaturaId())
-                .orElseThrow(() -> new RuntimeException("Asignatura no encontrada con ID: " + requestDTO.getAsignaturaId()));
+        // --- INICIO DE VALIDACIÓN ---
+        if (archivo.isEmpty()) {
+            throw new IllegalArgumentException("El archivo no puede estar vacío.");
+        }
 
-        // 1. Subir el archivo a Cloudinary
-        Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), ObjectUtils.emptyMap());
-        String url = (String) uploadResult.get("secure_url"); // O "url" si no usas https
+        String contentType = archivo.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, PDF, DOC, DOCX.");
+        }
+        // --- FIN DE VALIDACIÓN ---
+
+        Asignatura asignatura = asignaturaRepository.findById(requestDTO.getAsignaturaId())
+                .orElseThrow(() -> new NoSuchElementException("Asignatura no encontrada con ID: " + requestDTO.getAsignaturaId()));
+
+        // Para Cloudinary, es útil subir los archivos a una carpeta específica
+        Map<String, String> options = ObjectUtils.asMap(
+            "folder", "academica/materiales", //carpeta de cloudinary
+            "resource_type", "auto" // cloudinary detecta en automatico tipo de archivo
+        );
+
+        Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), options);
+        String url = (String) uploadResult.get("secure_url");
 
         // 2. Crear y guardar la entidad Material con la URL obtenida
         Material nuevoMaterial = new Material();

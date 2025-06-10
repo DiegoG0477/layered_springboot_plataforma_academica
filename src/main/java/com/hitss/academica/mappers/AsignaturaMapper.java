@@ -18,5 +18,6 @@ public interface AsignaturaMapper {
     // MapStruct es capaz de entender "profesor.usuario.nombre"
     @Mapping(source = "profesor.usuario.nombre", target = "nombreProfesor")
     @Mapping(source = "curso.nombre", target = "nombreCurso")
+    @Mapping(source = "curso.id", target = "cursoId")
     AsignaturaDetailResponseDTO asignaturaToAsignaturaDetailResponseDto(Asignatura asignatura);
 }

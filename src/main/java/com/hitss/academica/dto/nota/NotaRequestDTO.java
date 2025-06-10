@@ -15,8 +15,8 @@ public class NotaRequestDTO {
     private Long asignaturaId;
 
     @NotNull(message = "El valor de la nota no puede ser nulo")
-    @Min(value = 0, message = "La nota no puede ser menor que 0")
-    @Max(value = 20, message = "La nota no puede ser mayor que 20") // Asumiendo una escala de 0 a 20
+    @Min(value = 10, message = "La nota no puede ser menor que 0")
+    @Max(value = 100, message = "La nota no puede ser mayor que 100")
     private Integer valor;
 
     private String observaciones;

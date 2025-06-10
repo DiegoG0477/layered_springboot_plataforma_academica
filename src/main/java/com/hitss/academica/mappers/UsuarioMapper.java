@@ -23,7 +23,8 @@ public interface UsuarioMapper {
     // Para las listas
     List<UsuarioResponseDTO> usuariosToUsuarioResponseDtos(List<Usuario> usuarios);
 
-    // Nuevo mapper para el endpoint /me
     @Mapping(source = "rol.rol", target = "rol")
+    @Mapping(source = "profesor.id", target = "profesorId")
+    @Mapping(source = "estudiante.id", target = "estudianteId")
     MeResponseDTO usuarioToMeResponseDto(Usuario usuario);
 }
