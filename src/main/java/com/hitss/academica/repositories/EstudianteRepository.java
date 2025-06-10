@@ -18,11 +18,8 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
 
     List<Estudiante> findAllByCursoActualId(Long cursoId);
 
-    /**
-     * Encuentra todos los estudiantes matriculados en el mismo curso al que pertenece una asignatura específica.
-     * @param asignaturaId El ID de la asignatura.
-     * @return Una lista de entidades Estudiante.
-     */
     @Query("SELECT e FROM Estudiante e WHERE e.cursoActual.id = (SELECT a.curso.id FROM Asignatura a WHERE a.id = :asignaturaId)")
     List<Estudiante> findByAsignaturaId(@Param("asignaturaId") Long asignaturaId);
+
+    Optional<Estudiante> findByUsuario_Email(String email);
 }

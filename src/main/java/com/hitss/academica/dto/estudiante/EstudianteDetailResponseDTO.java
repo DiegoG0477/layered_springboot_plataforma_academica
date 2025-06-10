@@ -8,5 +8,5 @@ public class EstudianteDetailResponseDTO {
     private String nombreCompleto;
     private String email;
     private String codigoMatricula;
-    private String cursoActual; // Nombre del curso
+    private String cursoActual;
 }

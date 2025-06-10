@@ -26,29 +26,24 @@ public class UsuarioController {
     }
 
 
-    // GET /api/usuarios
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> getAllUsuarios() {
         return ResponseEntity.ok(usuarioService.findAll());
     }
 
-    // GET /api/usuarios/{id}
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> getUsuarioById(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.findById(id));
     }
 
-    // PUT /api/usuarios/{id}
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> updateUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequestDTO updateRequestDTO) {
         return ResponseEntity.ok(usuarioService.update(id, updateRequestDTO));
     }
 
-    // DELETE /api/usuarios/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
         usuarioService.delete(id);
-        // Devolvemos 204 No Content, que es el estándar para un DELETE exitoso.
         return ResponseEntity.noContent().build();
     }
 }

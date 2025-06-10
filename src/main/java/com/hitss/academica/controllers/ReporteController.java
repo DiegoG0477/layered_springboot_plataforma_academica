@@ -36,8 +36,6 @@ public class ReporteController {
     @Autowired
     private CsvExportService csvExportService;
 
-    // --- Endpoints JSON ---
-
     @GetMapping("/notas-promedio")
     @Operation(summary = "Obtener promedio de notas por asignatura (JSON)", description = "Devuelve el promedio de notas para cada asignatura en formato JSON.")
     public ResponseEntity<List<PromedioAsignaturaDTO>> getPromedioNotas() {
@@ -56,8 +54,6 @@ public class ReporteController {
         return ResponseEntity.ok(reporteService.getReporteFinalCurso(cursoId));
     }
 
-    // --- Endpoints CSV ---
-
     @GetMapping("/notas-promedio/csv")
     @Operation(summary = "Exportar promedio de notas (CSV)", description = "Descarga un archivo CSV con el promedio de notas para cada asignatura.")
     public void exportPromedioNotasToCsv(HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
@@ -73,36 +69,29 @@ public class ReporteController {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"reporte_final_curso_" + cursoId + ".csv\"");
         ReporteFinalDTO data = reporteService.getReporteFinalCurso(cursoId);
-        // El DTO EstudianteReporteDTO no se mapea bien automáticamente, así que lo haríamos manual con writeRawData
-        // Por ahora, lo dejamos pendiente para una mejora futura si es necesario.
+
         csvExportService.writeDataToCsv(response.getWriter(), data.getResultadosEstudiantes());
     }
 
-    // --- NUEVO ENDPOINT ---
     @GetMapping("/historial-estudiante/{id}/csv")
     @Operation(summary = "Exportar historial académico de un estudiante (CSV)", description = "Descarga un archivo CSV con las notas de un estudiante.")
     public void exportHistorialEstudianteToCsv(
             @Parameter(description = "ID del estudiante") @PathVariable Long id, HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 
-        // 1. Obtenemos el DTO completo del historial
         HistorialAcademicoDTO historial = reporteService.getHistorialEstudiante(id);
 
-        // 2. Configuramos la respuesta HTTP para la descarga del archivo
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"historial_" + historial.getCodigoMatricula() + ".csv\"");
 
-        // 3. Escribimos información de cabecera en el CSV (opcional pero útil)
         PrintWriter writer = response.getWriter();
         writer.println("REPORTE DE HISTORIAL ACADEMICO");
-        writer.println("Estudiante:," + historial.getNombreEstudiante()); // La coma separa en columnas
+        writer.println("Estudiante:," + historial.getNombreEstudiante());
         writer.println("Codigo Matricula:," + historial.getCodigoMatricula());
         writer.println("Curso Actual:," + historial.getCursoActual());
-        writer.println(); // Línea en blanco para separar
-        // "Flusheamos" para asegurarnos de que se escriba
+        writer.println();
+
         writer.flush();
 
-        // 4. Usamos nuestro servicio para escribir la lista de notas
-        // El DTO 'NotaResponseDTO' tiene campos planos y se mapeará perfectamente.
         csvExportService.writeDataToCsv(writer, historial.getNotas());
     }
 }

@@ -9,12 +9,14 @@ import com.hitss.academica.entities.Profesor;
 import com.hitss.academica.mappers.AsignaturaMapper;
 import com.hitss.academica.repositories.AsignaturaRepository;
 import com.hitss.academica.repositories.CursoRepository;
+import com.hitss.academica.repositories.EstudianteRepository;
 import com.hitss.academica.repositories.ProfesorRepository;
 import com.hitss.academica.services.AsignaturaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,9 @@ public class AsignaturaServiceImpl implements AsignaturaService {
 
     @Autowired
     private ProfesorRepository profesorRepository;
+
+    @Autowired
+    private EstudianteRepository estudianteRepository;
 
     @Autowired
     private CursoRepository cursoRepository;
@@ -100,7 +105,26 @@ public class AsignaturaServiceImpl implements AsignaturaService {
         if (!asignaturaRepository.existsById(id)) {
             throw new RuntimeException("Asignatura no encontrada con ID: " + id);
         }
-        // Borrado lógico gracias a @SQLDelete
         asignaturaRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AsignaturaResponseDTO> findAsignaturasByEstudianteAuth(String userEmail) {
+        // 1. Buscamos el perfil del estudiante a partir del email del usuario.
+        // Asumimos que el email es único en la tabla de usuarios.
+        return estudianteRepository.findByUsuario_Email(userEmail)
+                .map(estudiante -> {
+                    // 2. Si se encuentra el estudiante, obtenemos el ID de su curso actual.
+                    Long cursoId = estudiante.getCursoActual().getId();
+                    // 3. Buscamos todas las asignaturas de ese curso.
+                    List<Asignatura> asignaturas = asignaturaRepository.findByCursoId(cursoId);
+                    // 4. Mapeamos a DTO y devolvemos la lista.
+                    return asignaturas.stream()
+                            .map(asignaturaMapper::asignaturaToAsignaturaResponseDto)
+                            .collect(Collectors.toList());
+                })
+                // 5. Si no se encuentra un perfil de estudiante para ese email, devolvemos una lista vacía.
+                .orElse(Collections.emptyList());
     }
 }

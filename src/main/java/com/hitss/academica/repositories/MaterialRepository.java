@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MaterialRepository extends JpaRepository<Material, Long> {
-    // Para buscar todos los materiales de una asignatura
     List<Material> findByAsignaturaId(Long asignaturaId);
 }

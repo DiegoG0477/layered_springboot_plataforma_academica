@@ -41,7 +41,6 @@ public class NotaServiceImpl implements NotaService {
         Asignatura asignatura = asignaturaRepository.findById(requestDTO.getAsignaturaId())
                 .orElseThrow(() -> new RuntimeException("Asignatura no encontrada con ID: " + requestDTO.getAsignaturaId()));
 
-        // Lógica de negocio/seguridad: Un estudiante debe pertenecer al mismo curso que la asignatura.
         if (!estudiante.getCursoActual().getId().equals(asignatura.getCurso().getId())) {
             throw new IllegalArgumentException("El estudiante no pertenece al curso de esta asignatura.");
         }
@@ -62,7 +61,6 @@ public class NotaServiceImpl implements NotaService {
         Nota notaExistente = notaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nota no encontrada con ID: " + id));
 
-        // Solo actualizamos valor y observaciones
         notaExistente.setValor(requestDTO.getValor());
         notaExistente.setObservaciones(requestDTO.getObservaciones());
 
@@ -92,14 +90,19 @@ public class NotaServiceImpl implements NotaService {
     @Override
     @Transactional(readOnly = true)
     public List<NotaResponseDTO> findByEstudianteId(Long estudianteId) {
-        // En un caso real, validaríamos que el estudiante que hace la petición
-        // solo pueda ver sus propias notas, comparando con el ID del token.
-        // String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         if (!estudianteRepository.existsById(estudianteId)) {
             throw new RuntimeException("Estudiante no encontrado con ID: " + estudianteId);
         }
         List<Nota> notas = notaRepository.findByEstudianteId(estudianteId);
+        return notaMapper.notasToNotaResponseDtos(notas);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NotaResponseDTO> findNotasByEstudianteAuth(String userEmail) {
+        // La lógica está encapsulada en el repositorio.
+        List<Nota> notas = notaRepository.findByEstudiante_Usuario_Email(userEmail);
         return notaMapper.notasToNotaResponseDtos(notas);
     }
 }

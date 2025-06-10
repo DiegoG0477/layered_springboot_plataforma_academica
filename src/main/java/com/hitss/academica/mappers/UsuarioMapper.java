@@ -13,14 +13,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
 
-    // Ya lo teníamos
     Usuario registerRequestDtoToUsuario(RegisterRequestDTO registerRequestDTO);
 
-    // Ya lo teníamos
     @Mapping(source = "rol.rol", target = "rol")
     UsuarioResponseDTO usuarioToUsuarioResponseDto(Usuario usuario);
 
-    // Para las listas
     List<UsuarioResponseDTO> usuariosToUsuarioResponseDtos(List<Usuario> usuarios);
 
     @Mapping(source = "rol.rol", target = "rol")

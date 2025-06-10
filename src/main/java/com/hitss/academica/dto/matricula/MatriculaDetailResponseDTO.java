@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class MatriculaDetailResponseDTO {
     private Long id;
-    private EstudianteResponseDTO estudiante; // Objeto completo (bueno, su DTO)
-    private CursoResponseDTO curso;           // Objeto completo (su DTO)
+    private EstudianteResponseDTO estudiante;
+    private CursoResponseDTO curso;
 }

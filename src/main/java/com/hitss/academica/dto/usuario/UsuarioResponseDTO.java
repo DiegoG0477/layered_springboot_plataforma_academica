@@ -10,6 +10,6 @@ public class UsuarioResponseDTO {
     private String apellidoPaterno;
     private String apellidoMaterno;
     private String email;
-    private String rol; // Nombre del rol
+    private String rol;
     private LocalDateTime createdAt;
 }

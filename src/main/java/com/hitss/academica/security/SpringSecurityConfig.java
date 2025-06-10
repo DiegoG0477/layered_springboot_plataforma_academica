@@ -52,7 +52,6 @@ public class SpringSecurityConfig {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        // Uso del método estático recomendado para evitar la advertencia de deprecación
         return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_PROFESOR \n ROLE_PROFESOR > ROLE_ESTUDIANTE");
     }
 
@@ -81,16 +80,16 @@ public class SpringSecurityConfig {
 
                 // --- Reglas de Roles Específicos ---
                 // Aquí defines los permisos mínimos requeridos. La jerarquía se encargará de los roles superiores.
-                .requestMatchers(HttpMethod.GET, "/api/notas/estudiante/{id}").hasRole("ESTUDIANTE")
                 .requestMatchers(HttpMethod.GET, "/api/materiales/asignatura/{id}").hasRole("ESTUDIANTE")
-                .requestMatchers(HttpMethod.GET, "/api/reportes/historial-estudiante/{id}").hasRole("ESTUDIANTE")
+                .requestMatchers(HttpMethod.GET, "/api/asignaturas/estudiante").hasRole("ESTUDIANTE")
+                .requestMatchers(HttpMethod.GET, "/api/notas/estudiante").hasRole("ESTUDIANTE")
 
-                    //pendientes: Filtro de acceso de profesor por asignatura, filtro de estudiante por asignatura y estudiante ID
+                    //pendientes: Filtro de acceso de profesor por asignatura, filtro de estudiante por asignatura
                 .requestMatchers(HttpMethod.GET, "/api/asignaturas/{id}").hasRole("PROFESOR")
+                .requestMatchers(HttpMethod.GET, "/api/notas/estudiante/{id}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/estudiantes/asignatura/{asignaturaId}").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/profesores/{id}/asignaturas").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.GET, "/api/notas/asignatura/{id}").hasRole("PROFESOR")
-                .requestMatchers(HttpMethod.GET, "/api/reportes/notas-promedio").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.POST, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.PUT, "/api/notas/**").hasRole("PROFESOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/notas/**", "/api/materiales/**").hasRole("PROFESOR")
@@ -100,21 +99,16 @@ public class SpringSecurityConfig {
                                  "/api/estudiantes/**", "/api/cursos/**", "/api/periodos/**",
                                  "/api/asignaturas/**", "/api/reportes/**").hasRole("ADMIN")
 
-                // --- Endpoints Autenticados ---
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
 
-                // --- Denegar todo lo demás ---
                 .anyRequest().denyAll()
             )
-            // Se registra el filtro de autenticación JWT. Spring lo colocará en la posición correcta.
             .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenJwtConfig))
-            // El filtro de validación se ejecuta antes del de autenticación estándar.
             .addFilterBefore(new JwtValidationFilter(authenticationManager(), tokenJwtConfig), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // --- Configuración de CORS ---
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

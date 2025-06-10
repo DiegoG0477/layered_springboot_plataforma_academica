@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class SwaggerConfig {
-    //Swagger solo se habilitará con el perfil dev debido a buenas prácticas
+    //swagger solo se habilitará con el perfil dev debido a buenas prácticas
     @Bean
     @Profile("dev")
     public OpenAPI customOpenAPI() {

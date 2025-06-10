@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-@Data // @Data de Lombok genera getters, setters, toString, equals, hashCode
+@Data
 public class LoginRequestDTO {
 
     @NotBlank(message = "El correo electrónico no puede estar vacío")

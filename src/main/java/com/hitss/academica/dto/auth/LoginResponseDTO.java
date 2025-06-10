@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class LoginResponseDTO {
 
     private String token;
-    private Long expiresIn; // Tiempo de vida del token en segundos
+    private Long expiresIn;
 }

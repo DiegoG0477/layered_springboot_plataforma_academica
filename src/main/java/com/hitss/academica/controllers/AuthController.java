@@ -30,7 +30,7 @@ public class AuthController {
     @Autowired
     private UsuarioMapper usuarioMapper;
 
-        // --- Endpoint virtual para documentar /login ---
+        // endpoint virtual para login en swagger
     @Operation(
         summary = "Iniciar sesión de usuario",
         description = "Autentica a un usuario con su email y contraseña, y devuelve un token JWT si es exitoso.",

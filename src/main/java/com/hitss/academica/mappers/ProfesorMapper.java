@@ -14,13 +14,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface ProfesorMapper {
 
-    // Mapeo para la lista
     @Mapping(target = "nombreCompleto", expression = "java(profesor.getUsuario().getNombre() + \" \" + profesor.getUsuario().getApellidoPaterno())")
     @Mapping(source = "usuario.email", target = "email")
     ProfesorResponseDTO profesorToProfesorResponseDto(Profesor profesor);
-
-    // Mapeo para el detalle
-    // Necesitamos una lista de asignaturas para el profesor, que no está directamente en la entidad 'Profesor'.
-    // Esta información la proporcionará el servicio. Por eso, el DTO de detalle no se puede mapear automáticamente.
-    // Crearemos un método personalizado en el servicio para esto.
 }

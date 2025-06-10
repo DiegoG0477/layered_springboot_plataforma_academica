@@ -11,4 +11,5 @@ public interface NotaService {
     void delete(Long id);
     List<NotaResponseDTO> findByAsignaturaId(Long asignaturaId);
     List<NotaResponseDTO> findByEstudianteId(Long estudianteId);
+    List<NotaResponseDTO> findNotasByEstudianteAuth(String userEmail);
 }

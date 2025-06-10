@@ -7,6 +7,6 @@ import java.time.LocalDateTime;
 public class CursoDetailResponseDTO {
     private Long id;
     private String nombre;
-    private String periodoAcademico; // Nombre del periodo
+    private String periodoAcademico;
     private LocalDateTime createdAt;
 }

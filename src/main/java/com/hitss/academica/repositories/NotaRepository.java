@@ -24,4 +24,6 @@ public interface NotaRepository extends JpaRepository<Nota, Long> {
            "GROUP BY c.nombre, a.id, a.nombre " +
            "ORDER BY c.nombre, a.nombre")
     List<PromedioAsignaturaDTO> findPromedioNotasPorAsignatura();
+
+    List<Nota> findByEstudiante_Usuario_Email(String email);
 }

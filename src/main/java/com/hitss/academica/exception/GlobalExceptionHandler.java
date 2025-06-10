@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // --- MANEJADOR DE VALIDACIÓN DE DTOs ---
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -39,7 +38,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    // --- MANEJADORES DE EXCEPCIONES DE NEGOCIO Y DATOS ---
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
@@ -75,7 +73,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-    // --- MANEJADORES DE SEGURIDAD ---
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
@@ -87,7 +84,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
-    // --- MANEJADOR GENÉRICO (CATCH-ALL) ---
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
@@ -102,7 +98,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // --- CLASE INTERNA PARA ESTRUCTURAR LA RESPUESTA DE ERROR ---
     private static class ErrorResponse {
         private final LocalDateTime timestamp = LocalDateTime.now();
         private final int status;
@@ -121,7 +116,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             this.details = details;
         }
 
-        // Getters para que Jackson los pueda serializar a JSON
+        // getters para que jackson pueda serializar a json
         public LocalDateTime getTimestamp() { return timestamp; }
         public int getStatus() { return status; }
         public String getError() { return error; }

@@ -9,5 +9,5 @@ public class ProfesorDetailResponseDTO {
     private String nombreCompleto;
     private String especialidad;
     private String email;
-    private List<String> asignaturas; // JOIN - Lista de nombres de asignaturas
+    private List<String> asignaturas;
 }

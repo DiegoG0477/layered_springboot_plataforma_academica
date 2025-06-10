@@ -9,13 +9,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface AsignaturaMapper {
 
-    // Mapeo para la lista (DTO plano)
     @Mapping(source = "profesor.id", target = "profesorId")
     @Mapping(source = "curso.id", target = "cursoId")
     AsignaturaResponseDTO asignaturaToAsignaturaResponseDto(Asignatura asignatura);
 
-    // Mapeo para el detalle (DTO enriquecido)
-    // MapStruct es capaz de entender "profesor.usuario.nombre"
+
     @Mapping(source = "profesor.usuario.nombre", target = "nombreProfesor")
     @Mapping(source = "curso.nombre", target = "nombreCurso")
     @Mapping(source = "curso.id", target = "cursoId")

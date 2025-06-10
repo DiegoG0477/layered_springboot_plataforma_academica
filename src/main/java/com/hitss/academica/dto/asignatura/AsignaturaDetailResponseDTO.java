@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 public class AsignaturaDetailResponseDTO {
     private Long id;
     private String nombre;
-    private String nombreProfesor; // JOIN
-    private String nombreCurso;    // JOIN
+    private String nombreProfesor;
+    private String nombreCurso;
     private Long cursoId;
     private LocalDateTime createdAt;
 }

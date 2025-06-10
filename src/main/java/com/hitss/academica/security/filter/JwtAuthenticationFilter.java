@@ -29,10 +29,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final TokenJwtConfig tokenJwtConfig;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenJwtConfig tokenJwtConfig) {
-        // Pasamos el AuthenticationManager al constructor de la clase padre
         super(authenticationManager);
         this.tokenJwtConfig = tokenJwtConfig;
-        // Definimos explícitamente que este filtro SOLO debe actuar sobre POST /api/auth/login
         this.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/auth/login", "POST"));
     }
 
@@ -46,11 +44,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             throw new RuntimeException("Error en el formato de los datos de autenticación", e);
         }
 
-        String username = loginRequest.getEmail(); // El "username" para Spring Security es nuestro email
+        String username = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
-        // Usamos getAuthenticationManager() que fue establecido en el constructor de la clase padre
         return getAuthenticationManager().authenticate(authToken);
     }
 

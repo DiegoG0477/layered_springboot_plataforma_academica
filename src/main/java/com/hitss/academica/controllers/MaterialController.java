@@ -21,7 +21,6 @@ public class MaterialController {
     @Autowired
     private MaterialService materialService;
 
-    // Para subir archivos, se usa multipart/form-data
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MaterialResponseDTO> createMaterial(
             @Valid @RequestPart("data") MaterialRequestDTO requestDTO,
